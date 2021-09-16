@@ -9,12 +9,10 @@ class UniversalInternetChecker {
   /// lookUpAddress: String to use as lookup address to check internet connection
   static Future<bool> checkInternet() async {
     try {
-      var dohResponse = await DoH(DoHProvider.google)
-          .lookup('google.com', RecordType.A, dnssec: true);
+      var dohResponse = await DoH(DoHProvider.cloudflare)
+          .lookup('google.com', RecordType.A, dnssec: true, verbose: false);
       if (dohResponse != null) {
-        if (dohResponse.httpStatus == 200) {
-          return true;
-        }
+        return true;
       }
       return false;
     } catch (e) {
