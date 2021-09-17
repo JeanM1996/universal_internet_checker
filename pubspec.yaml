@@ -17,5 +17,3 @@ dev_dependencies:
     sdk: flutter
 
 flutter:
-
-publish_to: none

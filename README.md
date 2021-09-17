@@ -1,4 +1,4 @@
-# Simple Connection Checker
+# Universal Internet Checker
 
 Listenable class to check internet connectivity in Web and Mobile
 (not tested on desktop yet)
