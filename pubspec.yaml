@@ -8,10 +8,9 @@ environment:
   flutter: ">=2.0.0"
 
 dependencies:
-  doh_client:
-    path: '../doh_client'
   flutter:
     sdk: flutter
+  http: ^0.13.3
 
 dev_dependencies:
   flutter_test:
