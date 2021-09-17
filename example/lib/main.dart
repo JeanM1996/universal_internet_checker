@@ -71,15 +71,6 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            ElevatedButton(
-                onPressed: () async {
-                  bool _isConnected =
-                      await UniversalInternetChecker.checkInternet();
-                  setState(() {
-                    _message = _isConnected ? 'Connected' : 'Not connected';
-                  });
-                },
-                child: Text('Check connection')),
             Text(
               _message,
             ),

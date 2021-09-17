@@ -1,37 +1,25 @@
 library universal_internet_checker;
 
 import 'dart:async';
-import 'package:doh_client/doh_client.dart';
-//import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:io';
 
 class UniversalInternetChecker {
-  /// Static method to check if it's connected to internet
-  /// lookUpAddress: String to use as lookup address to check internet connection
-  static Future<bool> checkInternet() async {
-    try {
-      var dohResponse = await DoH(DoHProvider.cloudflare)
-          .lookup('google.com', RecordType.A, dnssec: true, verbose: false);
-      if (dohResponse != null) {
-        return true;
-      }
-      return false;
-    } catch (e) {
-      print(e);
-      return false;
-    }
-  }
+  static final Uri google = Uri.parse('https://dns.google.com/resolve');
+  static final Uri cloudflare =
+      Uri.parse('https://cloudflare-dns.com/dns-query');
+  static final Uri quad9 = Uri.parse('https://dns.quad9.net:5053/dns-query');
 
-  /// Timer to check periodically the internet status
-  Timer? _timer;
+  static Duration _interval = Duration(milliseconds: 1500);
+
+  //the domain to ask dns for
+  static String _domain = 'google.com';
 
   /// Last status for connection
   bool? _lastStatus;
 
-  /// String to use as look up address
-  //String? _lookUpAddress;
-
-  /// Value to indicate to timer the duration of every loop
-  final Duration _duration = const Duration(milliseconds: 1500);
+  /// Timer to check periodically the internet status
+  Timer? _timer;
+  //TODO: should this timer be late?
 
   /// Stream controller to emit a notifier when connection status changes
   final StreamController<bool> _streamController =
@@ -65,24 +53,44 @@ class UniversalInternetChecker {
   void _setupPolling() {
     _timer?.cancel();
     _checkAndBroadcast();
-    _timer = Timer.periodic(_duration, _checkAndBroadcast);
+    _timer = Timer.periodic(_interval, _checkAndBroadcast);
   }
 
   /// Method to check the connection status according the duration
   void _checkAndBroadcast([Timer? timer]) async {
-    // _timerHandler?.cancel();
-    // timer?.cancel();
+    if (!_streamController.hasListener) return;
 
-    bool isConnected = await UniversalInternetChecker.checkInternet();
+    bool isConnected = await checkInternet();
 
     print('connection status: $isConnected');
 
     if (_lastStatus != isConnected && _streamController.hasListener)
       _streamController.add(isConnected);
 
-    //TODO:move
-    if (!_streamController.hasListener) return;
-
     _lastStatus = isConnected;
+  }
+
+  /// Static method to check if it's connected to internet
+  /// lookUpAddress: String to use as lookup address to check internet connection
+  static Future<bool> checkInternet() async {
+    try {
+      var client = HttpClient();
+      // Set HttpClient timeout
+      client.connectionTimeout = Duration(milliseconds: 1200);
+      // Init request query parameters and send request
+      var request = await client.getUrl(cloudflare.replace(
+          queryParameters: {'name': _domain, 'type': 'A', 'dnssec': '1'}));
+      // Set request http header (need for 'cloudflare' provider)
+      request.headers.add('Accept', 'application/dns-json');
+      // Close & retrive response
+      var response = await request.close();
+      if (response.statusCode == 200) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('GET Error (probably no internet)');
+      return false;
+    }
   }
 }
