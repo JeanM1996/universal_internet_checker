@@ -50,7 +50,9 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     subscription = _internetChecker.onConnectionChange.listen((connected) {
       setState(() {
-        _message = connected ? 'Connected' : 'Not connected';
+        _message = connected == ConnectionStatus.online
+            ? 'Connected'
+            : 'Not Connected';
       });
     });
   }
@@ -71,6 +73,18 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            ElevatedButton(
+              onPressed: () async {
+                ConnectionStatus status =
+                    await UniversalInternetChecker.checkInternet();
+                setState(() {
+                  _message = status == ConnectionStatus.offline
+                      ? 'Connected'
+                      : 'Not connected';
+                });
+              },
+              child: Text('Check connection'),
+            ),
             Text(
               _message,
             ),

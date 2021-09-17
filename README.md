@@ -3,55 +3,52 @@
 Listenable class to check internet connectivity in Web and Mobile
 (not tested on desktop yet)
 
-## Demo
-
+You can also use this in a StreamProvider to give network awareness to your entire app.
 
 ## Installation
-Include `universal_internet_checker` in your `pubspec.yaml` file:
+Include `universal_internet_checker` in your `pubspec.yaml` file
+or add it from pub:
 
-```yaml
-dependencies:
-  flutter:
-    sdk: flutter
-  universal_internet_checker: version
+```
+flutter pub add universal_internet_checker
 ```
 
 ## Usage
 
-To use this package, just import it into your file and call the static method *isConnectedToInternet* as follows:
+To use this package, just import it into your file and call the static method *checkInternet* as follows:
 
 ```dart
 import 'package:universal_internet_checker/universal_internet_checker.dart';
 
 ...
 
-bool isConnected = await SimpleConnectionChecker.isConnectedToInternet();
+ConnectionStatus status = await UniversalInternetChecker.checkInternet();
 
 ...
 
 ```
 
-**Note**: You can pass an optional parameter named *lookUpAddress* to pass an especific URL to make the lookup operation and check the internet connection. By default, this value is *www.google.com*. Do not use the protocol on the URL string passed (http:// or https://).
+**Note**: You can set the static variable "checkAddress" to a specific URL to make the operation and check the internet connection. By default, this value is *www.google.com*. Do not include (http:// or https://)  or any subdirectory in your address
 
-## New 💥
+```dart
+UniversalInternetChecker.checkAddress = 'www.example.com';
+```
 
-Now you can listen for internet connection changes. Here is the example
+**Note**: You can listen for internet connection changes. Here is the example
 
 ```dart
 import 'package:universal_internet_checker/universal_internet_checker.dart';
 
 ...
 StreamSubscription? subscription;
-bool? _connected;
+ConnectionStatus? _status;
 
 @override
 void initState() {
   super.initState();
-  SimpleConnectionChecker _simpleConnectionChecker = SimpleConnectionChecker()
-      ..setLookUpAddress('pub.dev'); //Optional method to pass the lookup string
-  subscription = _simpleConnectionChecker.onConnectionChange.listen((connected) {
+  subscription = UniversalInternetChecker.onConnectionChange.listen((status) {
     setState(() {
-      _connected = connected;
+      _status = status;
     });
   });
 }
@@ -66,7 +63,11 @@ void dispose() {
 
 ```
 
-**Note**: Don't forget to cancel the subscription
+**Note**: If you're using provider, use
 
-## Demo
-<img src="https://raw.githubusercontent.com/ajomuch92/simple-connection-checker/master/assets/demo-listen.gif" width="200" height="429"/>
+```dart
+StreamProvider<ConnectionStatus>(
+  create: (context) => UniversalInternetChecker().onConnectionChange,
+  initialData: ConnectionStatus.unknown)
+
+```

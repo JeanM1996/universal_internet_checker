@@ -9,20 +9,19 @@ class UniversalInternetChecker {
   static Duration _interval = Duration(milliseconds: 2000);
 
   //the domain to ask dns for
-  static String _domain = 'google.com';
+  static String checkAddress = 'google.com';
 
   /// Last status for connection
-  bool? _lastStatus;
+  ConnectionStatus _lastStatus = ConnectionStatus.unknown;
 
   /// Timer to check periodically the internet status
   late Timer _timer;
 
   /// Stream controller to emit a notifier when connection status changes
-  final StreamController<bool> _streamController =
-      StreamController<bool>.broadcast();
+  final _streamController = StreamController<ConnectionStatus>.broadcast();
 
   /// Get method to return the stream from stream controller
-  Stream<bool> get onConnectionChange => _streamController.stream;
+  Stream<ConnectionStatus> get onConnectionChange => _streamController.stream;
 
   /// Constructor to return the same instance for every new initialization
   factory UniversalInternetChecker() => _instance;
@@ -37,7 +36,7 @@ class UniversalInternetChecker {
 
     _streamController.onCancel = () {
       _timer.cancel();
-      _lastStatus = null;
+      _lastStatus = ConnectionStatus.unknown;
     };
   }
 
@@ -50,35 +49,37 @@ class UniversalInternetChecker {
   void _checkAndBroadcast([Timer? timer]) async {
     if (!_streamController.hasListener) return;
 
-    bool isConnected = await checkInternet();
+    ConnectionStatus currentStatus = await checkInternet();
 
-    if (_lastStatus != isConnected && _streamController.hasListener) {
-      _streamController.add(isConnected);
-      print('connection status changed: $isConnected');
+    if (_lastStatus != currentStatus && _streamController.hasListener) {
+      _streamController.add(currentStatus);
+      print('connection status changed: $currentStatus');
+      _lastStatus = currentStatus;
     }
-
-    _lastStatus = isConnected;
   }
 
   /// Static method to check if it's connected to internet
   /// lookUpAddress: String to use as lookup address to check internet connection
-  static Future<bool> checkInternet() async {
+  static Future<ConnectionStatus> checkInternet() async {
     try {
       // Init request query parameters and send request
       http.Response response = await http.get(
-          doHService.replace(
-              queryParameters: {'name': _domain, 'type': 'A', 'dnssec': '1'}),
+          doHService.replace(queryParameters: {
+            'name': checkAddress,
+            'type': 'A',
+            'dnssec': '1'
+          }),
           headers: {
             'Accept': 'application/dns-json'
           }).timeout(Duration(milliseconds: 1200));
 
       // Close & retrive response
       if (response.statusCode == 200) {
-        return true;
+        return ConnectionStatus.online;
       }
-      return false;
+      return ConnectionStatus.offline;
     } catch (e) {
-      return false;
+      return ConnectionStatus.offline;
     }
   }
 }
@@ -89,3 +90,5 @@ class DoHServices {
       Uri.parse('https://cloudflare-dns.com/dns-query');
   static final Uri quad9 = Uri.parse('https://dns.quad9.net:5053/dns-query');
 }
+
+enum ConnectionStatus { online, offline, unknown }
