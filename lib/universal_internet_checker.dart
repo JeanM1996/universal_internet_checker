@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 class UniversalInternetChecker {
   static Uri doHService = DoHServices.cloudflare;
 
-  static Duration _interval = Duration(milliseconds: 2000);
+  static Duration _interval = Duration(seconds: 30);
 
   //the domain to ask dns for
   static String checkAddress = 'google.com';

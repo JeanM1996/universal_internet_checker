@@ -1,6 +1,6 @@
 name: universal_internet_checker
 description: Listenable internet check for Flutter Web and Mobile
-version: 0.1.1
+version: 0.1.2
 homepage: https://github.com/iwalpola/universal_internet_checker
 
 environment:
