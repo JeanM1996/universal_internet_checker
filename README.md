@@ -68,6 +68,6 @@ void dispose() {
 ```dart
 StreamProvider<ConnectionStatus>(
   create: (context) => UniversalInternetChecker().onConnectionChange,
-  initialData: ConnectionStatus.unknown)
+  initialData: ConnectionStatus.online)
 
 ```
