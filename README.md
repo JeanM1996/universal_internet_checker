@@ -15,6 +15,14 @@ flutter pub add universal_internet_checker
 
 ## Usage
 
+Default check interval is 5 seconds if last status was "OFFLINE", and 25 seconds if last status was ONLINE
+
+to change:
+```dart
+UniversalInternetChecker._intervalOffline = Duration(milliseconds:5000);
+UniversalInternetChecker._intervalOnline = Duration(milliseconds:25000);
+```
+
 To use this package, just import it into your file and call the static method *checkInternet* as follows:
 
 ```dart
