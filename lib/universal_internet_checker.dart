@@ -49,6 +49,10 @@ class UniversalInternetChecker {
       _lastStatus = ConnectionStatus.unknown;
     };
   }
+  
+  void dispose() {
+     _streamController.close();
+  }
 
   void _setupPolling() {
     _checkAndBroadcast();
